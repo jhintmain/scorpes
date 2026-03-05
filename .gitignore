@@ -1,0 +1,27 @@
+# Binaries
+/api
+/tmp
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+vendor/
+
+# Test / coverage
+*.test
+*.out
+
+# Env
+.env
+.env.*
+!.env.example
+
+# air
+tmp/
+
+
+# idea
+.idea/
