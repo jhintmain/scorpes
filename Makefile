@@ -4,7 +4,7 @@ build:
 	go build -o ./tmp/main ./cmd/server
 
 run:
-	go run ./cmd/api
+	go run ./cmd/server
 
 dev:
 	air

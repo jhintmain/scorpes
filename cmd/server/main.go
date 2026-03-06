@@ -4,18 +4,20 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
+
+	"github.com/hooneun/scorpes/internal/api"
 )
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", helloHandler)
 
-	port := os.Getenv("PORT")
+	r := api.NewRouter()
 
-	log.Println("server starting on :" + port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
-		log.Fatal(err)
+	r.Use(api.LoggerMiddleware)
+
+	r.GET("/health", helloHandler)
+
+	if err := http.ListenAndServe(":8090", r); err != nil {
+		log.Fatalf("Server failed: %v", err)
 	}
 }
 
