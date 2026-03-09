@@ -6,10 +6,18 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	CreateTarget(ctx context.Context, arg CreateTargetParams) (Target, error)
+	GetTargetByID(ctx context.Context, id pgtype.UUID) (Target, error)
+	GetUptimeSummary(ctx context.Context, hours int32) ([]GetUptimeSummaryRow, error)
+	InsertCheckResult(ctx context.Context, arg InsertCheckResultParams) (CheckResult, error)
+	ListTargets(ctx context.Context) ([]Target, error)
 	Ping(ctx context.Context) (int32, error)
+	SoftDeleteTarget(ctx context.Context, id pgtype.UUID) error
 }
 
 var _ Querier = (*Queries)(nil)
