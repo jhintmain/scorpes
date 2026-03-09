@@ -3,3 +3,31 @@
 //   sqlc v1.30.0
 
 package db
+
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+type CheckResult struct {
+	ID              int64              `json:"id"`
+	TargetID        pgtype.UUID        `json:"target_id"`
+	StatusCode      pgtype.Int4        `json:"status_code"`
+	ResponseTimeMs  int32              `json:"response_time_ms"`
+	IsHealthy       bool               `json:"is_healthy"`
+	ErrorMessage    pgtype.Text        `json:"error_message"`
+	ResponseBody    pgtype.Text        `json:"response_body"`
+	ResponseHeaders []byte             `json:"response_headers"`
+	CheckedAt       pgtype.Timestamptz `json:"checked_at"`
+}
+
+type Target struct {
+	ID              pgtype.UUID        `json:"id"`
+	Name            string             `json:"name"`
+	Url             string             `json:"url"`
+	Method          string             `json:"method"`
+	IntervalSeconds int32              `json:"interval_seconds"`
+	TimeoutSeconds  int32              `json:"timeout_seconds"`
+	IsActive        bool               `json:"is_active"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+}
