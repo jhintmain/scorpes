@@ -16,3 +16,13 @@ RETURNING *;
 UPDATE targets
 SET deleted_at = now(), is_active = false
 WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: UpdateTarget :one
+UPDATE targets
+SET name = $2,
+    url = $3,
+    method = $4,
+    interval_seconds = $5,
+    timeout_seconds = $6
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING *;

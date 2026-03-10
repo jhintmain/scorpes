@@ -1,0 +1,264 @@
+### Variables
+@baseUrl = http://localhost:8090
+
+### Health Check
+GET {{baseUrl}}/health
+Accept: application/json
+
+> {%
+    client.test("Health check returns OK", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.success === true, "Success is not true");
+    });
+%}
+
+### List Targets - Empty
+GET {{baseUrl}}/api/targets
+Accept: application/json
+
+> {%
+    client.test("List targets returns success", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.success === true, "Success is not true");
+    });
+%}
+
+### Create Target - Valid Request
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "Example API",
+    "url": "https://api.example.com/health",
+    "method": "GET",
+    "interval_seconds": 60,
+    "timeout_seconds": 10
+}
+
+> {%
+    client.test("Create target returns 201", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.assert(response.body.success === true, "Success is not true");
+        client.assert(response.body.data.name === "Example API", "Name mismatch");
+    });
+    client.global.set("targetId", response.body.data.id);
+%}
+
+### Create Target - With POST Method
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "POST Endpoint",
+    "url": "https://api.example.com/ping",
+    "method": "POST",
+    "interval_seconds": 120,
+    "timeout_seconds": 5
+}
+
+> {%
+    client.test("Create POST target", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.assert(response.body.data.method === "POST", "Method should be POST");
+    });
+    client.global.set("postTargetId", response.body.data.id);
+%}
+
+### Create Target - With HEAD Method
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "HEAD Check",
+    "url": "https://example.com",
+    "method": "HEAD",
+    "interval_seconds": 300,
+    "timeout_seconds": 5
+}
+
+> {%
+    client.test("Create HEAD target", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.assert(response.body.data.method === "HEAD", "Method should be HEAD");
+    });
+%}
+
+### Create Target - Default Method (Empty)
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "Default Method Test",
+    "url": "https://example.com/api",
+    "method": "",
+    "interval_seconds": 60,
+    "timeout_seconds": 10
+}
+
+> {%
+    client.test("Empty method defaults to GET", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.assert(response.body.data.method === "GET", "Default method should be GET");
+    });
+%}
+
+### Create Target - Lowercase Method Normalized
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "Lowercase Method",
+    "url": "https://example.com",
+    "method": "post",
+    "interval_seconds": 60,
+    "timeout_seconds": 10
+}
+
+> {%
+    client.test("Lowercase method normalized to uppercase", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.assert(response.body.data.method === "POST", "Method should be normalized to POST");
+    });
+%}
+
+### List Targets - After Creation
+GET {{baseUrl}}/api/targets
+Accept: application/json
+
+> {%
+    client.test("List contains created targets", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.success === true, "Success is not true");
+        client.assert(Array.isArray(response.body.data), "Data should be an array");
+        client.assert(response.body.data.length > 0, "Should have at least one target");
+    });
+%}
+
+### Create Target - Missing Name (Error)
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "",
+    "url": "https://example.com",
+    "method": "GET",
+    "interval_seconds": 60
+}
+
+> {%
+    client.test("Missing name returns 400", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.success === false, "Success should be false");
+        client.assert(response.body.error === "name is required", "Error message mismatch");
+    });
+%}
+
+### Create Target - Missing URL (Error)
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "url": "",
+    "method": "GET",
+    "interval_seconds": 60
+}
+
+> {%
+    client.test("Missing URL returns 400", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.error === "url is required", "Error message mismatch");
+    });
+%}
+
+### Create Target - Invalid URL Format (Error)
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "url": "not-a-valid-url",
+    "method": "GET",
+    "interval_seconds": 60
+}
+
+> {%
+    client.test("Invalid URL returns 400", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.error === "invalid URL format", "Error message mismatch");
+    });
+%}
+
+### Create Target - Invalid HTTP Method (Error)
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "url": "https://example.com",
+    "method": "INVALID",
+    "interval_seconds": 60
+}
+
+> {%
+    client.test("Invalid method returns 400", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.error === "invalid HTTP method", "Error message mismatch");
+    });
+%}
+
+### Create Target - Interval Less Than 60 (Error)
+POST {{baseUrl}}/api/targets
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "url": "https://example.com",
+    "method": "GET",
+    "interval_seconds": 30
+}
+
+> {%
+    client.test("Interval < 60 returns 400", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.error === "interval seconds must be less than or equal to 60", "Error message mismatch");
+    });
+%}
+
+### Delete Target - Success
+DELETE {{baseUrl}}/api/targets/{{targetId}}
+Accept: application/json
+
+> {%
+    client.test("Delete target returns 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.success === true, "Success is not true");
+    });
+%}
+
+### Delete Target - Not Found
+DELETE {{baseUrl}}/api/targets/550e8400-e29b-41d4-a716-446655440000
+Accept: application/json
+
+> {%
+    client.test("Delete non-existent target returns 404", function() {
+        client.assert(response.status === 404, "Response status is not 404");
+        client.assert(response.body.success === false, "Success should be false");
+        client.assert(response.body.error === "Target not found", "Error message mismatch");
+    });
+%}
+
+### Delete Target - Invalid UUID Format
+DELETE {{baseUrl}}/api/targets/invalid-uuid
+Accept: application/json
+
+> {%
+    client.test("Invalid UUID returns 400", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.error === "Invalid target ID format", "Error message mismatch");
+    });
+%}
+
+### Cleanup - Delete POST Target
+DELETE {{baseUrl}}/api/targets/{{postTargetId}}
+Accept: application/json

@@ -18,6 +18,7 @@ type Querier interface {
 	ListTargets(ctx context.Context) ([]Target, error)
 	Ping(ctx context.Context) (int32, error)
 	SoftDeleteTarget(ctx context.Context, id pgtype.UUID) error
+	UpdateTarget(ctx context.Context, arg UpdateTargetParams) (Target, error)
 }
 
 var _ Querier = (*Queries)(nil)

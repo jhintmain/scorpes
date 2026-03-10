@@ -116,3 +116,47 @@ func (q *Queries) SoftDeleteTarget(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, softDeleteTarget, id)
 	return err
 }
+
+const updateTarget = `-- name: UpdateTarget :one
+UPDATE targets
+SET name = $2,
+    url = $3,
+    method = $4,
+    interval_seconds = $5,
+    timeout_seconds = $6
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING id, name, url, method, interval_seconds, timeout_seconds, is_active, created_at, deleted_at
+`
+
+type UpdateTargetParams struct {
+	ID              pgtype.UUID `json:"id"`
+	Name            string      `json:"name"`
+	Url             string      `json:"url"`
+	Method          string      `json:"method"`
+	IntervalSeconds int32       `json:"interval_seconds"`
+	TimeoutSeconds  int32       `json:"timeout_seconds"`
+}
+
+func (q *Queries) UpdateTarget(ctx context.Context, arg UpdateTargetParams) (Target, error) {
+	row := q.db.QueryRow(ctx, updateTarget,
+		arg.ID,
+		arg.Name,
+		arg.Url,
+		arg.Method,
+		arg.IntervalSeconds,
+		arg.TimeoutSeconds,
+	)
+	var i Target
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Url,
+		&i.Method,
+		&i.IntervalSeconds,
+		&i.TimeoutSeconds,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}

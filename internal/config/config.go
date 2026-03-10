@@ -3,7 +3,8 @@ package config
 import "os"
 
 type Config struct {
-	Server ServerConfig
+	Server   ServerConfig
+	Database DatabaseConfig
 }
 
 type ServerConfig struct {
@@ -11,11 +12,18 @@ type ServerConfig struct {
 	Env  string
 }
 
+type DatabaseConfig struct {
+	URL string
+}
+
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
 			Port: getEnv("PORT", "8090"),
 			Env:  getEnv("ENV", "development"),
+		},
+		Database: DatabaseConfig{
+			URL: getEnv("DATABASE_URL", ""),
 		},
 	}
 }

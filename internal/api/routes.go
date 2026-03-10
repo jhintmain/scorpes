@@ -2,17 +2,17 @@ package api
 
 import "net/http"
 
-func RegisterRoutes(r *Router) {
+func RegisterRoutes(r *Router, h *TargetHandler) {
 	r.Use(LoggerMiddleware)
 
 	r.GET("/health", healthCheckHandler)
 
-	// 모니터링 대상 목록 조회
-	r.GET("/api/targets", healthCheckHandler)
-	// 신규 대상 추가
-	r.POST("/api/targets", healthCheckHandler)
-	// 대상 삭제
-	r.DELETE("/api/targets/:id", healthCheckHandler)
+	// Target API
+	r.GET("/api/targets", h.ListTargets)
+	r.POST("/api/targets", h.CreateTarget)
+	r.PUT("/api/targets/{id}", h.UpdateTarget)
+	r.DELETE("/api/targets/{id}", h.DeleteTarget)
+
 	// Uptime 상태 요약 조회
 	r.GET("/api/status", healthCheckHandler)
 }
