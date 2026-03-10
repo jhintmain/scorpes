@@ -5,15 +5,18 @@ import (
 	"net/http"
 
 	"github.com/hooneun/scorpes/internal/config"
+	db "github.com/hooneun/scorpes/internal/db/sqlc"
 )
 
 type API struct {
 	cfg *config.Config
+	db  *db.Queries
 }
 
-func NewAPI(cfg *config.Config) *API {
+func NewAPI(cfg *config.Config, db *db.Queries) *API {
 	return &API{
 		cfg: cfg,
+		db:  db,
 	}
 }
 

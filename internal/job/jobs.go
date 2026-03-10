@@ -14,10 +14,6 @@ var (
 	}
 )
 
-func ExampleJob() {
-	fmt.Println("example job executed")
-}
-
 // HealthCheck [job] : health check
 func HealthCheck() {
 	resp, err := client.Get(util.ApiURL("/health"))

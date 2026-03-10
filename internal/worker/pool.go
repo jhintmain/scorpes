@@ -1,6 +1,11 @@
 package worker
 
-import "log"
+import (
+	"log"
+
+	"github.com/hooneun/scorpes/internal/config"
+	db "github.com/hooneun/scorpes/internal/db/sqlc"
+)
 
 /**
 JobQueue 소비
@@ -9,12 +14,16 @@ JobQueue 소비
 type Pool struct {
 	JobQueue JobQueue
 	Workers  int
+	Cfg      *config.Config
+	Db       *db.Queries
 }
 
-func NewPool(workerCount, queueSize int) *Pool {
+func NewPool(workerCount, queueSize int, cfg *config.Config, db *db.Queries) *Pool {
 	return &Pool{
 		JobQueue: make(JobQueue, queueSize),
 		Workers:  workerCount,
+		Cfg:      cfg,
+		Db:       db,
 	}
 }
 
