@@ -8,6 +8,10 @@ import (
 	"github.com/hooneun/scorpes/internal/config"
 	db "github.com/hooneun/scorpes/internal/db/sqlc"
 	"github.com/jackc/pgx/v5/pgxpool"
+	db "github.com/hooneun/scorpes/internal/db/sqlc"
+	"github.com/hooneun/scorpes/internal/scheduler"
+	"github.com/hooneun/scorpes/internal/worker"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {

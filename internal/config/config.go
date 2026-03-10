@@ -8,8 +8,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port string
-	Env  string
+	Port        string
+	Env         string
+	DatabaseURL string
 }
 
 type DatabaseConfig struct {
@@ -19,8 +20,9 @@ type DatabaseConfig struct {
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
-			Port: getEnv("PORT", "8090"),
-			Env:  getEnv("ENV", "development"),
+			Port:        getEnv("PORT", "8090"),
+			Env:         getEnv("ENV", "development"),
+			DatabaseURL: getEnv("DATABASE_URL", ""),
 		},
 		Database: DatabaseConfig{
 			URL: getEnv("DATABASE_URL", ""),

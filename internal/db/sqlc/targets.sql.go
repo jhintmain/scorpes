@@ -13,8 +13,7 @@ import (
 
 const createTarget = `-- name: CreateTarget :one
 INSERT INTO targets (name, url, method, interval_seconds, timeout_seconds)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, name, url, method, interval_seconds, timeout_seconds, is_active, created_at, deleted_at
+VALUES ($1, $2, $3, $4, $5) RETURNING id, name, url, method, interval_seconds, timeout_seconds, is_active, created_at, deleted_at
 `
 
 type CreateTargetParams struct {
@@ -49,8 +48,10 @@ func (q *Queries) CreateTarget(ctx context.Context, arg CreateTargetParams) (Tar
 }
 
 const getTargetByID = `-- name: GetTargetByID :one
-SELECT id, name, url, method, interval_seconds, timeout_seconds, is_active, created_at, deleted_at FROM targets
-WHERE id = $1 AND deleted_at IS NULL
+SELECT id, name, url, method, interval_seconds, timeout_seconds, is_active, created_at, deleted_at
+FROM targets
+WHERE id = $1
+  AND deleted_at IS NULL
 `
 
 func (q *Queries) GetTargetByID(ctx context.Context, id pgtype.UUID) (Target, error) {
@@ -71,9 +72,10 @@ func (q *Queries) GetTargetByID(ctx context.Context, id pgtype.UUID) (Target, er
 }
 
 const listTargets = `-- name: ListTargets :many
-SELECT id, name, url, method, interval_seconds, timeout_seconds, is_active, created_at, deleted_at FROM targets
+SELECT id, name, url, method, interval_seconds, timeout_seconds, is_active, created_at, deleted_at
+FROM targets
 WHERE deleted_at IS NULL
-ORDER BY created_at
+  AND is_active = true
 `
 
 func (q *Queries) ListTargets(ctx context.Context) ([]Target, error) {
@@ -108,8 +110,10 @@ func (q *Queries) ListTargets(ctx context.Context) ([]Target, error) {
 
 const softDeleteTarget = `-- name: SoftDeleteTarget :exec
 UPDATE targets
-SET deleted_at = now(), is_active = false
-WHERE id = $1 AND deleted_at IS NULL
+SET deleted_at = now(),
+    is_active  = false
+WHERE id = $1
+  AND deleted_at IS NULL
 `
 
 func (q *Queries) SoftDeleteTarget(ctx context.Context, id pgtype.UUID) error {
